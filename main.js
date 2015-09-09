@@ -1,41 +1,26 @@
-'use strict';
+var jsdom = require('jsdom'),
+    express = require('express');
 
-var request = require('request'),
-    fs = require('fs'),
-    jsdom = require('jsdom');
+    var app = new express();
 
-// request.get('http://www.pinterest.com/imanmohamadi/web-designers-idea-board/', function (err, resp, body) {
-//   console.log(body);
-// });
+app.get('/pins', function (req, res) {
+  jsdom.env(
+    req.headers.target,
+    ['http://code.jquery.com/jquery.js'],
+    function (errors, window) {
+      var srcs = [],
+          pins = window.$('.pinHolder img.pinImg');
+          pins.each(function () {
+            var $pin = window.$(this);
+            srcs.push($pin.attr('src'));
+          });
 
-// jsdom.env(
-//   'http://www.pinterest.com/imanmohamadi/web-designers-idea-board/',
-//   ['http://code.jquery.com/jquery.js'],
-//   function (err, window) {
-//     var srcs = [],
-//         pins = window.$('.pinHolder img.pinImg');
-//
-//     pins.each(function (pin) {
-//       srcs.push(pin.attr('src'));
-//     });
-//
-//     console.log(JSON.stringify(srcs));
-//   });
+          res.send(srcs);
+    }
+  );
+});
 
-jsdom.env(
-  'http://www.pinterest.com/imanmohamadi/web-designers-idea-board/',
-  ['http://code.jquery.com/jquery.js'],
-  function (errors, window) {
-    var srcs = [],
-        pins = window.$('.pinHolder img.pinImg');
-        pins.each(function () {
-          var $pin = window.$(this);
-          srcs.push($pin.attr('src'));
-        });
-
-        console.log(JSON.stringify(srcs));
-        // console.log(pins);
-  }
-);
-
-// request('http://www.pinterest.com/imanmohamadi/web-designers-idea-board/').pipe(fs.createWriteStream('test.html'));
+var port = process.env.PORT || 30000;
+app.listen(port, function () {
+  console.log('app started...');
+});
